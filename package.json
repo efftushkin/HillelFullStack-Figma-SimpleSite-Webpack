@@ -1,0 +1,46 @@
+{
+  "name": "hillelfullstack-figma-simplesite-webpack",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack serve --config webpack.config.development.js",
+    "build": "webpack --config webpack.config.production.js",
+    "build:dev": "webpack --config webpack.config.development.js",
+    "watch": "webpack --watch --config webpack.config.development.js",
+    "clean": "rd /s /q dist",
+    "start": "npm run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/efftushkin/HillelFullStack-Figma-SimpleSite-Webpack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/efftushkin/HillelFullStack-Figma-SimpleSite-Webpack/issues"
+  },
+  "homepage": "https://github.com/efftushkin/HillelFullStack-Figma-SimpleSite-Webpack#readme",
+  "description": "",
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
+    "babel-loader": "^10.1.1",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^14.0.0",
+    "css-loader": "^7.1.4",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.6.6",
+    "mini-css-extract-plugin": "^2.10.2",
+    "sass": "^1.99.0",
+    "sass-loader": "^16.0.7",
+    "style-loader": "^4.0.0",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.106.1",
+    "webpack-cli": "^7.0.2",
+    "webpack-dev-server": "^5.2.3"
+  },
+  "dependencies": {
+    "core-js": "^3.49.0"
+  }
+}
