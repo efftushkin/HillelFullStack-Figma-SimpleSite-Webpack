@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 /**
  * Development configuration
@@ -31,11 +32,11 @@ module.exports = {
       directory: path.join(__dirname, 'dist'),
     },
     compress: true,
-    port: 9000,
+    port: 9001,
     hot: true, // Hot Module Replacement
     open: true, // Auto open browser
     historyApiFallback: true, // For SPA
-    watchFiles: ['src/**/*', 'scss/**/*', 'index.html', 'img/**/*'],
+    watchFiles: ['src/**/*'],
     
     // Detailed logs
     client: {
@@ -97,6 +98,26 @@ module.exports = {
         },
       },
 
+      // TypeScript
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true,
+            },
+          },
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true, // Faster builds in dev
+            },
+          },
+        ],
+      },
+
       // JavaScript with Babel
       {
         test: /\.js$/,
@@ -113,7 +134,7 @@ module.exports = {
 
   plugins: [
     new HtmlWebpackPlugin({
-      template: './index.html',
+      template: './src/index.html',
       filename: 'index.html',
       inject: 'body',
     }),
@@ -127,10 +148,19 @@ module.exports = {
         },
       ],
     }),
+
+    // ESLint plugin for real-time code checking
+    new ESLintPlugin({
+      extensions: ['js', 'jsx', 'ts', 'tsx'],
+      exclude: ['node_modules', 'dist'],
+      emitWarning: true,
+      failOnError: false, // Don't fail build on errors in dev
+      failOnWarning: false,
+    }),
   ],
 
   resolve: {
-    extensions: ['.js', '.json', '.sass', '.scss', '.css'],
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.sass', '.scss', '.css'],
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@img': path.resolve(__dirname, 'img'),

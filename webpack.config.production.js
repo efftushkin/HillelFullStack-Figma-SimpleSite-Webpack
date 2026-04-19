@@ -3,6 +3,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 /**
  * Extended production configuration
@@ -83,6 +85,24 @@ module.exports = {
         },
       },
 
+      // TypeScript
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true,
+              cacheCompression: false,
+            },
+          },
+          {
+            loader: 'ts-loader',
+          },
+        ],
+      },
+
       // JavaScript with Babel
       {
         test: /\.js$/,
@@ -102,7 +122,7 @@ module.exports = {
     new CleanWebpackPlugin(),
 
     new HtmlWebpackPlugin({
-      template: './index.html',
+      template: './src/index.html',
       filename: 'index.html',
       minify: {
         collapseWhitespace: true,
@@ -135,6 +155,27 @@ module.exports = {
         },
       ],
     }),
+
+    // ESLint plugin for production builds
+    new ESLintPlugin({
+      extensions: ['js', 'jsx', 'ts', 'tsx'],
+      exclude: ['node_modules', 'dist'],
+      emitWarning: false,
+      failOnError: true, // Fail build on errors in production
+      failOnWarning: false,
+    }),
+
+    // Bundle Analyzer - visualize size of webpack output files
+    // Set ANALYZE=true environment variable to enable
+    ...(process.env.ANALYZE === 'true'
+      ? [
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          openAnalyzer: true,
+          reportFilename: 'bundle-report.html',
+        }),
+      ]
+      : []),
   ],
 
   optimization: {
@@ -164,7 +205,7 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.js', '.json', '.sass', '.scss', '.css'],
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.sass', '.scss', '.css'],
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@img': path.resolve(__dirname, 'img'),

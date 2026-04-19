@@ -3,6 +3,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -36,10 +38,10 @@ module.exports = (env, argv) => {
         directory: path.join(__dirname, 'dist'),
       },
       compress: true,
-      port: 9000,
+      port: 9001,
       hot: true,
       open: true,
-      watchFiles: ['src/**/*', 'index.html'],
+      watchFiles: ['src/**/*'],
     },
 
     // Modules and file processing rules
@@ -99,7 +101,28 @@ module.exports = (env, argv) => {
           },
         },
 
-        // JavaScript processing with Babel (optional)
+        // TypeScript processing
+        {
+          test: /\.tsx?$/,
+          exclude: /node_modules/,
+          use: [
+            {
+              loader: 'babel-loader',
+              options: {
+                presets: ['@babel/preset-env'],
+                cacheDirectory: true,
+              },
+            },
+            {
+              loader: 'ts-loader',
+              options: {
+                transpileOnly: !isProduction, // Faster dev builds
+              },
+            },
+          ],
+        },
+
+        // JavaScript processing with Babel
         {
           test: /\.js$/,
           exclude: /node_modules/,
@@ -121,26 +144,26 @@ module.exports = (env, argv) => {
 
       // Generate HTML file
       new HtmlWebpackPlugin({
-        template: './index.html',
+        template: './src/index.html',
         filename: 'index.html',
         minify: isProduction
           ? {
-              collapseWhitespace: true,
-              removeComments: true,
-              removeRedundantAttributes: true,
-              useShortDoctype: true,
-            }
+            collapseWhitespace: true,
+            removeComments: true,
+            removeRedundantAttributes: true,
+            useShortDoctype: true,
+          }
           : false,
       }),
 
       // Extract CSS to separate files (only for production)
       ...(isProduction
         ? [
-            new MiniCssExtractPlugin({
-              filename: 'css/[name].[contenthash:8].css',
-              chunkFilename: 'css/[id].[contenthash:8].css',
-            }),
-          ]
+          new MiniCssExtractPlugin({
+            filename: 'css/[name].[contenthash:8].css',
+            chunkFilename: 'css/[id].[contenthash:8].css',
+          }),
+        ]
         : []),
 
       // Copy static files
@@ -153,6 +176,26 @@ module.exports = (env, argv) => {
           },
         ],
       }),
+
+      // ESLint for code quality checking
+      new ESLintPlugin({
+        extensions: ['js', 'jsx', 'ts', 'tsx'],
+        exclude: ['node_modules', 'dist'],
+        emitWarning: !isProduction,
+        failOnError: isProduction,
+        failOnWarning: false,
+      }),
+
+      // Bundle Analyzer (only when ANALYZE env var is set)
+      ...(process.env.ANALYZE === 'true'
+        ? [
+          new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            openAnalyzer: true,
+            reportFilename: 'bundle-report.html',
+          }),
+        ]
+        : []),
     ],
 
     // Optimization
@@ -172,7 +215,7 @@ module.exports = (env, argv) => {
 
     // Resolutions
     resolve: {
-      extensions: ['.js', '.json', '.sass', '.scss', '.css'],
+      extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.sass', '.scss', '.css'],
       alias: {
         '@': path.resolve(__dirname, 'src'),
         '@img': path.resolve(__dirname, 'img'),
